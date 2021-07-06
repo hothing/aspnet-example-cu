@@ -27,8 +27,10 @@ namespace ContosoUniversity
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<SchoolContext>(options =>
-                //options.UseSqlite(Configuration.GetConnectionString("DbConnection")));
-                options.UseSqlite(@"Data Source=school.db"));
+            {
+                options.EnableSensitiveDataLogging();
+                options.UseSqlite(@"Data Source=school.db");
+            });
 
             services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddControllersWithViews();
@@ -59,6 +61,8 @@ namespace ContosoUniversity
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+                // special case
+                // https://localhost:5001/CourseAssignment/Edit?CourseID=5&InstructorID=9
             });
         }
     }
