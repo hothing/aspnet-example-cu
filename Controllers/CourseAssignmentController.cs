@@ -132,7 +132,7 @@ namespace cu_pum.Controllers
                     _context.CourseAssignments.Remove(courseAssignment);
                     await _context.SaveChangesAsync();
                     // Step 2a: create new course assigment
-                    var couseAssigment = new CourseAssignment() { CourseID = CourseID[1], InstructorID = InstructorID[1] } ; 
+                    courseAssignment = new CourseAssignment() { CourseID = CourseID[1], InstructorID = InstructorID[1] } ; 
                     // Step 2b: check that pair (CourseID, InstructorID) is not exist
                     var caTest = await _context.CourseAssignments.FindAsync(courseAssignment.CourseID, courseAssignment.InstructorID);
                     if (caTest == null)
