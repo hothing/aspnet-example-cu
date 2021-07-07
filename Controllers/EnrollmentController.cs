@@ -49,7 +49,7 @@ namespace cu_pum.Controllers
         // GET: Enrollment/Create
         public IActionResult Create()
         {
-            ViewData["CourseID"] = new SelectList(_context.Courses, "CourseID", "CourseID");
+            ViewData["CourseID"] = new SelectList(_context.Courses, "CourseID", "Title");
             ViewData["StudentID"] = new SelectList(_context.Students, "ID", "FirstMidName");
             return View();
         }
@@ -67,7 +67,7 @@ namespace cu_pum.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CourseID"] = new SelectList(_context.Courses, "CourseID", "CourseID", enrollment.CourseID);
+            ViewData["CourseID"] = new SelectList(_context.Courses, "CourseID", "Title", enrollment.CourseID);
             ViewData["StudentID"] = new SelectList(_context.Students, "ID", "FirstMidName", enrollment.StudentID);
             return View(enrollment);
         }
@@ -85,8 +85,9 @@ namespace cu_pum.Controllers
             {
                 return NotFound();
             }
-            ViewData["CourseID"] = new SelectList(_context.Courses, "CourseID", "CourseID", enrollment.CourseID);
+            ViewData["CourseID"] = new SelectList(_context.Courses, "CourseID", "Title", enrollment.CourseID);
             ViewData["StudentID"] = new SelectList(_context.Students, "ID", "FirstMidName", enrollment.StudentID);
+            ViewData["Grade"] = new SelectList(, "Value", "Name", enrollment.Grade);
             return View(enrollment);
         }
 
@@ -122,7 +123,7 @@ namespace cu_pum.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CourseID"] = new SelectList(_context.Courses, "CourseID", "CourseID", enrollment.CourseID);
+            ViewData["CourseID"] = new SelectList(_context.Courses, "CourseID", "Title", enrollment.CourseID);
             ViewData["StudentID"] = new SelectList(_context.Students, "ID", "FirstMidName", enrollment.StudentID);
             return View(enrollment);
         }
