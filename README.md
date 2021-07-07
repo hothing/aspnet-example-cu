@@ -1,6 +1,16 @@
-# ASP>NET MVC with EF Core
+# ASP.NET MVC with EF Core
 
+Read an article [Tutorial: Get started with EF Core in an ASP.NET MVC web app](https://docs.microsoft.com/en-us/aspnet/core/data/ef-mvc/intro?view=aspnetcore-5.0)
+
+And test the working example http://wagner.wang/ContosoUniversity
 ## Prerequisites
+
+* Debian/Ubuntu Linux
+* [Install .NET Core SDK (NET5)](https://docs.microsoft.com/en-us/dotnet/core/install/linux)
+* SQLite 3.x
+        sudo apt install sqlite3
+
+* [Visual Studio Code](https://code.visualstudio.com/download) 
 
 ## Build from scratch
 
@@ -29,6 +39,16 @@ Fix-up the enviroment variables (Linux):
 
 ### Create the models
 
+    $ mkdir Models
+    $ nano Models/Person.cs
+    $ nano Models/Student.cs
+    $ nano Models/Instructor.cs
+    $ nano Models/Course.cs
+    $ nano Models/Department.cs
+    $ nano Models/Enrollment.cs
+    $ nano Models/OfficeAssigment.cs
+    $ nano Models/CourseAssigment.cs    
+
 ### Generate the controllers and the views
 
     dotnet-aspnet-codegenerator controller -name StudentController -dc SchoolContext -m Student -sqlite -l "_Layout" -outDir Controllers
@@ -40,3 +60,7 @@ Fix-up the enviroment variables (Linux):
     dotnet-aspnet-codegenerator controller -name OfficeAssignmentController -dc SchoolContext -m OfficeAssignment -sqlite -l "_Layout" -outDir Controllers
     dotnet-aspnet-codegenerator controller -name CourseAssignmentController -dc SchoolContext -m CourseAssignment -sqlite -l "_Layout" -outDir Controllers
     dotnet-aspnet-codegenerator controller -name PersonController -dc SchoolContext -m Person -sqlite -l "_Layout" -outDir Controllers
+
+### Edit the controllers and views
+
+Default models are not good enough for using. They should be improved.
