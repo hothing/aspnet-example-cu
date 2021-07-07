@@ -87,7 +87,7 @@ namespace cu_pum.Controllers
             }
             ViewData["CourseID"] = new SelectList(_context.Courses, "CourseID", "Title", enrollment.CourseID);
             ViewData["StudentID"] = new SelectList(_context.Students, "ID", "FirstMidName", enrollment.StudentID);
-            ViewData["Grade"] = new SelectList(, "Value", "Name", enrollment.Grade);
+            //ViewData["Grade"] = new SelectList(, "Value", "Name", enrollment.Grade);
             return View(enrollment);
         }
 

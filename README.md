@@ -4,6 +4,17 @@
 
 ## Build from scratch
 
+### Install EF Core tools
+
+Install the CLI tool:
+
+    dotnet tool install --global dotnet-ef
+
+Fix-up the enviroment variables (Linux):
+
+    export PATH=$PATH:$HOME/.dotnet/tools
+    export DOTNET_ROOT=$HOME/.dotnet
+
 ### Generate ASP>NET MVC project
 
     dotnet new mvc -o cu-pum
