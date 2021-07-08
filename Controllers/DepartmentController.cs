@@ -48,7 +48,7 @@ namespace cu_pum.Controllers
         // GET: Department/Create
         public IActionResult Create()
         {
-            ViewData["InstructorID"] = new SelectList(_context.Set<Instructor>(), "ID", "FirstMidName");
+            MakeInstructorList(null);
             return View();
         }
 
@@ -65,7 +65,7 @@ namespace cu_pum.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["InstructorID"] = new SelectList(_context.Set<Instructor>(), "ID", "FirstMidName", department.InstructorID);
+            MakeInstructorList(department);
             return View(department);
         }
 
@@ -82,7 +82,7 @@ namespace cu_pum.Controllers
             {
                 return NotFound();
             }
-            ViewData["InstructorID"] = new SelectList(_context.Set<Instructor>(), "ID", "FirstMidName", department.InstructorID);
+            MakeInstructorList(department);
             return View(department);
         }
 
@@ -118,7 +118,7 @@ namespace cu_pum.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["InstructorID"] = new SelectList(_context.Set<Instructor>(), "ID", "FirstMidName", department.InstructorID);
+            
             return View(department);
         }
 
@@ -155,6 +155,12 @@ namespace cu_pum.Controllers
         private bool DepartmentExists(int id)
         {
             return _context.Department.Any(e => e.DepartmentID == id);
+        }
+        
+
+        private void MakeInstructorList(Department department)
+        {
+            ViewData["InstructorID"] = new SelectList(_context.Set<Instructor>(), "ID", "FullName", department?.InstructorID);
         }
     }
 }

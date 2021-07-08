@@ -32,19 +32,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="DepartmentID" class="control-label"></label>
-                @if (ViewBag.Departments != null)
-                {
-                    <select asp-for="DepartmentID" class="form-control">
-                    @foreach (var d in (ViewBag.Departments))
-                    {
-                        <option value="@d.Value" label="@d.Text"></option>
-                    }
-                </select>
-                } else {
-                    <select asp-for="DepartmentID" class="form-control" asp-items="ViewBag.DepartmentID"></select>
-                }
-                <!--<select asp-for="DepartmentID" class="form-control" asp-items="ViewBag.DepartmentID">-->
-                
+                <select asp-for="DepartmentID" class="form-control" asp-items="ViewBag.DepartmentID"></select>                
                 <span asp-validation-for="DepartmentID" class="text-danger"></span>
             </div>
             <div class="form-group">

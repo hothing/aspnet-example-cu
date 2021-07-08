@@ -48,8 +48,7 @@ namespace cu_pum.Controllers
         // GET: Course/Create
         public IActionResult Create()
         {
-            //ViewData["DepartmentID"] = new SelectList(_context.Set<Department>(), "DepartmentID", "DepartmentID");
-            ViewData["Departments"] = new SelectList(_context.Set<Department>(), "DepartmentID", "Name");
+            MakeDeparmentList(null);
             return View();
         }
 
@@ -66,8 +65,7 @@ namespace cu_pum.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            //ViewData["DepartmentID"] = new SelectList(_context.Set<Department>(), "DepartmentID", "DepartmentID", course.DepartmentID);
-            ViewData["Departments"] = new SelectList(_context.Set<Department>(), "DepartmentID", "Name", course.DepartmentID);
+            MakeDeparmentList(course);
             return View(course);
         }
 
@@ -84,8 +82,7 @@ namespace cu_pum.Controllers
             {
                 return NotFound();
             }
-            //ViewData["DepartmentID"] = new SelectList(_context.Set<Department>(), "DepartmentID", "DepartmentID", course.DepartmentID);
-            ViewData["Departments"] = new SelectList(_context.Set<Department>(), "DepartmentID", "Name", course.DepartmentID);
+            MakeDeparmentList(course);
             return View(course);
         }
 
@@ -121,8 +118,7 @@ namespace cu_pum.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            //ViewData["DepartmentID"] = new SelectList(_context.Set<Department>(), "DepartmentID", "DepartmentID", course.DepartmentID);
-            ViewData["Departments"] = new SelectList(_context.Set<Department>(), "DepartmentID", "Name", course.DepartmentID);
+            MakeDeparmentList(course);
             return View(course);
         }
 
@@ -159,6 +155,17 @@ namespace cu_pum.Controllers
         private bool CourseExists(int id)
         {
             return _context.Courses.Any(e => e.CourseID == id);
+        }
+        private void MakeDeparmentList(Course course)
+        {
+            if (course != null)
+            {
+                ViewData["DepartmentID"] = new SelectList(_context.Set<Department>(), "DepartmentID", "Name", course.DepartmentID);
+            }
+            else
+            {
+                ViewData["DepartmentID"] = new SelectList(_context.Set<Department>(), "DepartmentID", "Name");
+            }
         }
     }
 }
