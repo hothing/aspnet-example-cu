@@ -160,7 +160,7 @@ namespace cu_pum.Controllers
         {
             if (course != null)
             {
-                ViewData["DepartmentID"] = new SelectList(_context.Set<Department>(), "DepartmentID", "Name", course.DepartmentID);
+                ViewData["DepartmentID"] = new SelectList(_context.Set<Department>(), "DepartmentID", "Name", course?.DepartmentID);
             }
             else
             {

@@ -27,7 +27,7 @@ namespace cu_pum.Controllers
         public async Task<IActionResult> Index()
         {
             var schoolContext = _context.CourseAssignments.Include(c => c.Course).Include(c => c.Instructor);
-            ViewData["CourseID"] = new SelectList(_context.Courses, "CourseID", "Title");
+            MakeCourseList(null);
             return View(await schoolContext.ToListAsync());
         }
 
@@ -49,8 +49,8 @@ namespace cu_pum.Controllers
         // GET: CourseAssignment/Create
         public IActionResult Create()
         {
-            ViewData["CourseID"] = new SelectList(_context.Courses, "CourseID", "Title");
-            ViewData["InstructorID"] = new SelectList(_context.Instructor, "ID", "FirstMidName");
+            MakeInstructorList(null);
+            MakeCourseList(null);
             return View();
         }
 
@@ -64,8 +64,7 @@ namespace cu_pum.Controllers
             if (ModelState.IsValid)
             {
                 // Step 1: check that pair (CourseID, InstructorID) is not exist
-                var caTest = await _context.CourseAssignments.FindAsync(courseAssignment.CourseID, courseAssignment.InstructorID);
-                if (caTest == null)
+                if (!CourseAssignmentExists(courseAssignment.CourseID, courseAssignment.InstructorID))
                 {
                     // Step2 : ok, the record can be added
                     _context.Add(courseAssignment);
@@ -73,10 +72,10 @@ namespace cu_pum.Controllers
                     return RedirectToAction(nameof(Index));
                 }                
             }
-            // not ok, the record exists. The actual page must be showen
-            ViewData["CourseID"] = new SelectList(_context.Courses, "CourseID", "Title", courseAssignment.CourseID);
-            ViewData["InstructorID"] = new SelectList(_context.Instructor, "ID", "FirstMidName", courseAssignment.InstructorID);
-            ViewData["Warning"] = "That course assigment already exists";
+            // not ok, the record exists. The actual page must be showen with warning
+            MakeInstructorList(courseAssignment);
+            MakeCourseList(courseAssignment);
+            AssigmentWarning(courseAssignment);
             return View(courseAssignment);
         }
 
@@ -88,10 +87,11 @@ namespace cu_pum.Controllers
             {
                 return NotFound();
             }
-            ViewData["CourseID"] = new SelectList(_context.Courses, "CourseID", "Title", courseAssignment.CourseID);
-            ViewData["InstructorID"] = new SelectList(_context.Instructor, "ID", "FirstMidName", courseAssignment.InstructorID);
+            MakeInstructorList(courseAssignment);
+            MakeCourseList(courseAssignment);
             return View(courseAssignment);
         }
+
         // POST: CourseAssignment/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
@@ -100,14 +100,7 @@ namespace cu_pum.Controllers
         // 
         //public async Task<IActionResult> Edit(int id, [Bind("InstructorID, CourseID")] CourseAssignment courseAssignment)
         public async Task<IActionResult> Edit(int[] CourseID, int[] InstructorID)
-        {
-            /* _logger.LogInformation("POST id = {Id}, CourseID = {CourseID}, InstructorID = {CourseID}", id, CourseID, InstructorID);
-            if ((CourseID != courseAssignment.CourseID) || (InstructorID != courseAssignment.InstructorID))
-            {
-                return NotFound();
-            } */
-            _logger.LogInformation("POST Old CourseID = {CourseID}, InstructorID = {CourseID}", CourseID[0], InstructorID[0]);
-            _logger.LogInformation("POST New CourseID = {CourseID}, InstructorID = {CourseID}", CourseID[1], InstructorID[1]);
+        {            
             var courseAssignment = await _context.CourseAssignments
                                         .Include(c => c.Course)
                                         .Include(c => c.Instructor)
@@ -115,7 +108,6 @@ namespace cu_pum.Controllers
             
             if (ModelState.IsValid)
             {
-                _logger.LogInformation("POST. Model is valid and will be updated");
                 try
                 {   
                     // The code below is not valid because:
@@ -128,20 +120,18 @@ namespace cu_pum.Controllers
                     _logger.LogTrace(_context.ChangeTracker.DebugView.LongView);
                     if (!_context.ChangeTracker.HasChanges()) {_logger.LogWarning("data is up-to-dated (unexpected)"); } 
                     */
-                    // Step 1: remove old record
-                    _context.CourseAssignments.Remove(courseAssignment);
-                    await _context.SaveChangesAsync();
-                    // Step 2a: create new course assigment
-                    courseAssignment = new CourseAssignment() { CourseID = CourseID[1], InstructorID = InstructorID[1] } ; 
-                    // Step 2b: check that pair (CourseID, InstructorID) is not exist
-                    var caTest = await _context.CourseAssignments.FindAsync(courseAssignment.CourseID, courseAssignment.InstructorID);
-                    if (caTest == null)
+                    // Step 1: check that new pair (CourseID, InstructorID) is not exist
+                    var newAssignment = new CourseAssignment() { CourseID = CourseID[1], InstructorID = InstructorID[1] } ; 
+                    if (!CourseAssignmentExists(newAssignment.CourseID, newAssignment.InstructorID))
                     {
+                        // Step 2: remove old record
+                        _context.CourseAssignments.Remove(courseAssignment);
+                        await _context.SaveChangesAsync();
                         // Step 3 : ok, the record can be added
-                        _context.Add(courseAssignment);
+                        _context.Add(newAssignment);
                         await _context.SaveChangesAsync();
                         return RedirectToAction(nameof(Index));
-                    }                                        
+                    }                          
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -155,9 +145,9 @@ namespace cu_pum.Controllers
                     }
                 }
             }
-            ViewData["CourseID"] = new SelectList(_context.Courses, "CourseID", "Title", courseAssignment.CourseID);
-            ViewData["InstructorID"] = new SelectList(_context.Instructor, "ID", "FirstMidName", courseAssignment.InstructorID);
-            ViewData["Warning"] = "That course assigment already exists";
+            MakeInstructorList(courseAssignment);
+            MakeCourseList(courseAssignment);
+            AssigmentWarning(courseAssignment);
             return View(courseAssignment);
         }
 
@@ -190,6 +180,21 @@ namespace cu_pum.Controllers
         private bool CourseAssignmentExists(int CourseID, int InstructorID)
         {
             return _context.CourseAssignments.Any(e => (e.CourseID == CourseID) && (e.InstructorID == InstructorID));
+        }
+
+        private void MakeInstructorList(CourseAssignment courseAssignment)
+        {
+            ViewData["InstructorID"] = new SelectList(_context.Instructor, "ID", "FullName", courseAssignment?.InstructorID);
+        }
+
+        private void MakeCourseList(CourseAssignment courseAssignment)
+        {
+            ViewData["CourseID"] = new SelectList(_context.Courses, "CourseID", "Title", courseAssignment?.CourseID);
+        }
+
+        private void AssigmentWarning(CourseAssignment courseAssignment)
+        {
+           ViewData["Warning"] = "That course assigment already exists";
         }
     }
 }

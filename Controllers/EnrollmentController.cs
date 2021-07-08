@@ -165,12 +165,12 @@ namespace cu_pum.Controllers
 
         private void MakeCourseList(Enrollment enrollment)
         {
-            ViewData["CourseID"] = new SelectList(_context.Courses, "CourseID", "Title", enrollment.CourseID);
+            ViewData["CourseID"] = new SelectList(_context.Courses, "CourseID", "Title", enrollment?.CourseID);
         }
 
         private void MakeStudentList(Enrollment enrollment)
         {
-            ViewData["StudentID"] = new SelectList(_context.Students, "ID", "FullName", enrollment.StudentID);
+            ViewData["StudentID"] = new SelectList(_context.Students, "ID", "FullName", enrollment?.StudentID);
         }
     }
 }

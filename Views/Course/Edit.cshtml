@@ -21,17 +21,17 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="CourseID" />
             <div class="form-group">
-                <label asp-for="Title" class="control-label"></label>
+                <label asp-for="Title" class="control-label">Title</label>
                 <input asp-for="Title" class="form-control" />
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Credits" class="control-label"></label>
+                <label asp-for="Credits" class="control-label">Credits</label>
                 <input asp-for="Credits" class="form-control" />
                 <span asp-validation-for="Credits" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="DepartmentID" class="control-label"></label>
+                <label asp-for="DepartmentID" class="control-label">Department</label>
                 <select asp-for="DepartmentID" class="form-control" asp-items="ViewBag.DepartmentID"></select>                
                 <span asp-validation-for="DepartmentID" class="text-danger"></span>
             </div>

@@ -29,7 +29,7 @@
                 @Html.DisplayFor(modelItem => item.Location)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Instructor.FirstMidName)
+                @Html.DisplayFor(modelItem => item.Instructor.FullName)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.InstructorID">Edit</a> |

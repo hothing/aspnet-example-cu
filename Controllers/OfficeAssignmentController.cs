@@ -48,7 +48,7 @@ namespace cu_pum.Controllers
         // GET: OfficeAssignment/Create
         public IActionResult Create()
         {
-            ViewData["InstructorID"] = new SelectList(_context.Instructor, "ID", "FirstMidName");
+            MakeInstructorList(null);
             return View();
         }
 
@@ -61,11 +61,18 @@ namespace cu_pum.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(officeAssignment);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                if (!OfficeAssignmentExists(officeAssignment))
+                    {
+                        _context.Add(officeAssignment);
+                        await _context.SaveChangesAsync();
+                        return RedirectToAction(nameof(Index));
+                    }
+                    else
+                    {
+                        AssigmentWarning(officeAssignment);
+                    }                
             }
-            ViewData["InstructorID"] = new SelectList(_context.Instructor, "ID", "FirstMidName", officeAssignment.InstructorID);
+            MakeInstructorList(officeAssignment);
             return View(officeAssignment);
         }
 
@@ -82,7 +89,7 @@ namespace cu_pum.Controllers
             {
                 return NotFound();
             }
-            ViewData["InstructorID"] = new SelectList(_context.Instructor, "ID", "FirstMidName", officeAssignment.InstructorID);
+            MakeInstructorList(officeAssignment);
             return View(officeAssignment);
         }
 
@@ -102,8 +109,15 @@ namespace cu_pum.Controllers
             {
                 try
                 {
-                    _context.Update(officeAssignment);
-                    await _context.SaveChangesAsync();
+                    if (!OfficeAssignmentExists(officeAssignment))
+                    {
+                        _context.Update(officeAssignment);
+                        await _context.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        AssigmentWarning(officeAssignment);
+                    }                    
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -118,7 +132,7 @@ namespace cu_pum.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["InstructorID"] = new SelectList(_context.Instructor, "ID", "FirstMidName", officeAssignment.InstructorID);
+            MakeInstructorList(officeAssignment);
             return View(officeAssignment);
         }
 
@@ -155,6 +169,29 @@ namespace cu_pum.Controllers
         private bool OfficeAssignmentExists(int id)
         {
             return _context.OfficeAssignments.Any(e => e.InstructorID == id);
+        }
+
+        private bool OfficeAssignmentExists(OfficeAssignment officeAssignment)
+        {
+            if (officeAssignment !=null)
+            {
+                return _context.OfficeAssignments.Any(e => (e.InstructorID == officeAssignment.InstructorID) && (String.Compare(e.Location, officeAssignment.Location) == 0));
+            }
+            else
+            {
+                // because there is no information the worst case action is using
+                return true;
+            }
+        }
+
+        private void MakeInstructorList(OfficeAssignment officeAssignment)
+        {
+            ViewData["InstructorID"] = new SelectList(_context.Instructor, "ID", "FullName", officeAssignment?.InstructorID);
+        }
+
+        private void AssigmentWarning(OfficeAssignment officeAssignment)
+        {
+           ViewData["Warning"] = "That office assigment already exists";
         }
     }
 }
