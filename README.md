@@ -1,7 +1,8 @@
 # ASP.NET MVC with EF Core
 
 Read an article [Tutorial: Get started with EF Core in an ASP.NET MVC web app](https://docs.microsoft.com/en-us/aspnet/core/data/ef-mvc/intro?view=aspnetcore-5.0)
-And test the working example http://wagner.wang/ContosoUniversity
+
+And test the working original example http://wagner.wang/ContosoUniversity
 ## Prerequisites
 
 * Debian/Ubuntu Linux

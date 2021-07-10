@@ -22,7 +22,16 @@ namespace cu_pum.Controllers
         // GET: Instructor
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Instructor.ToListAsync());
+            var InstructorsList = await _context.Instructor
+                        .Include(instr => instr.CourseAssignments)
+                        .ThenInclude(ca => ca.Course)
+                        .ToListAsync();
+            /* foreach (var instr in InstructorsList)
+            {
+                _context.Entry(instr).Collection(b => b.CourseAssignments).Load();
+            } */
+            //return View(await _context.Instructor.ToListAsync());
+            return View(InstructorsList);
         }
 
         // GET: Instructor/Details/5

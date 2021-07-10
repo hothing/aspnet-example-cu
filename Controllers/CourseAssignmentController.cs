@@ -75,7 +75,7 @@ namespace cu_pum.Controllers
             // not ok, the record exists. The actual page must be showen with warning
             MakeInstructorList(courseAssignment);
             MakeCourseList(courseAssignment);
-            AssigmentWarning(courseAssignment);
+            ModelState.AddModelError(nameof(courseAssignment.InstructorID), "Assigment exists");
             return View(courseAssignment);
         }
 
@@ -147,7 +147,8 @@ namespace cu_pum.Controllers
             }
             MakeInstructorList(courseAssignment);
             MakeCourseList(courseAssignment);
-            AssigmentWarning(courseAssignment);
+            ModelState.AddModelError(nameof(courseAssignment.InstructorID), "Assigment exists");
+            //AssigmentWarning(courseAssignment);
             return View(courseAssignment);
         }
 
