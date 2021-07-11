@@ -35,6 +35,17 @@
                 <input asp-for="HireDate" class="form-control" />
                 <span asp-validation-for="HireDate" class="text-danger"></span>
             </div>
+            <div>
+                <label>Office</label>
+                @if (Model.OfficeAssignment != null)
+                {
+                    @Html.ActionLink(Model.OfficeAssignment.Location, "Edit", "OfficeAssignment", new { id = Model.ID } )
+                } 
+                else
+                {
+                    @Html.ActionLink("(Set)", "Create", "OfficeAssignment" )
+                }                
+            </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>

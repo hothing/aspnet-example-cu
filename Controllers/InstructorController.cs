@@ -87,7 +87,14 @@ namespace cu_pum.Controllers
                 return NotFound();
             }
 
-            var instructor = await _context.Instructor.FindAsync(id);
+            //var instructor = await _context.Instructor
+            //    .FindAsync(id);
+            var instructor = await _context.Instructor
+                .Include(instr => instr.CourseAssignments)
+                .ThenInclude(ca => ca.Course)
+                .Include(instr => instr.OfficeAssignment)
+                .FirstOrDefaultAsync(m => m.ID == id);
+                
             if (instructor == null)
             {
                 return NotFound();
