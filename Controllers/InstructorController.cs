@@ -25,6 +25,7 @@ namespace cu_pum.Controllers
             var InstructorsList = await _context.Instructor
                         .Include(instr => instr.CourseAssignments)
                         .ThenInclude(ca => ca.Course)
+                        .Include(instr => instr.OfficeAssignment)
                         .ToListAsync();
             /* foreach (var instr in InstructorsList)
             {
@@ -43,7 +44,11 @@ namespace cu_pum.Controllers
             }
 
             var instructor = await _context.Instructor
+                .Include(instr => instr.CourseAssignments)
+                .ThenInclude(ca => ca.Course)
+                .Include(instr => instr.OfficeAssignment)
                 .FirstOrDefaultAsync(m => m.ID == id);
+                
             if (instructor == null)
             {
                 return NotFound();
