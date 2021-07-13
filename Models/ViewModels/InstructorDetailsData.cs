@@ -1,16 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace ContosoUniversity.Models.ViewModels
 {
-    public class InstructorIndexData
+    public class InstructorDetailsData
     {
-        public IEnumerable<Instructor> Instructors { get; set; }
-
-        public IEnumerable<Course> Courses { get; set; }
-        
+        public Instructor Instructor { get; set; }
+        //public IEnumerable<Course> Courses { get; set; }
         public IEnumerable<Enrollment> Enrollments { get; set; }
     }
 }

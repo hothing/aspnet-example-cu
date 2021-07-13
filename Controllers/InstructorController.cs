@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ContosoUniversity.Data;
 using ContosoUniversity.Models;
+using ContosoUniversity.Models.ViewModels;
 
 namespace cu_pum.Controllers
 {
@@ -36,7 +37,7 @@ namespace cu_pum.Controllers
         }
 
         // GET: Instructor/Details/5
-        public async Task<IActionResult> Details(int? id)
+        /* public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
@@ -55,6 +56,43 @@ namespace cu_pum.Controllers
             }
 
             return View(instructor);
+        } */
+
+        // GET: Instructor/Details/5
+        public async Task<IActionResult> Details(int? id, int? CourseID)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var instructor = await _context.Instructor
+                .Include(instr => instr.CourseAssignments)
+                .ThenInclude(ca => ca.Course)
+                .Include(instr => instr.OfficeAssignment)
+                .FirstOrDefaultAsync(m => m.ID == id);           
+
+            if (instructor != null)
+            {
+                IEnumerable<Enrollment> ex = null;
+                if (CourseID != null)
+                {
+                    var courseAssigment = instructor.CourseAssignments.Where(x => x.CourseID == CourseID).Single(); 
+                    var selectedCourse = courseAssigment.Course;
+                    await _context.Entry(selectedCourse).Collection(x => x.Enrollments).LoadAsync();
+                    foreach (Enrollment enrollment in selectedCourse.Enrollments)
+                    {
+                        await _context.Entry(enrollment).Reference(x => x.Student).LoadAsync();
+                    }
+                    ex = selectedCourse.Enrollments;
+                }
+                var details = new InstructorDetailsData() {
+                    Instructor = instructor,
+                    Enrollments = ex
+                };
+                return View(details);
+            }
+            return NotFound();            
         }
 
         // GET: Instructor/Create
