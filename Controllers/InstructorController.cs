@@ -79,6 +79,7 @@ namespace cu_pum.Controllers
                 {
                     var courseAssigment = instructor.CourseAssignments.Where(x => x.CourseID == CourseID).Single(); 
                     var selectedCourse = courseAssigment.Course;
+                    ViewData["Course"] = selectedCourse.Title;
                     await _context.Entry(selectedCourse).Collection(x => x.Enrollments).LoadAsync();
                     foreach (Enrollment enrollment in selectedCourse.Enrollments)
                     {
