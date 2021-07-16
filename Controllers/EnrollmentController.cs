@@ -29,21 +29,18 @@ namespace cu_pum.Controllers
         // GET: Enrollment/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
+            if (id != null)
             {
-                return NotFound();
-            }
-
-            var enrollment = await _context.Enrollments
+                var enrollment = await _context.Enrollments
                 .Include(e => e.Course)
                 .Include(e => e.Student)
                 .FirstOrDefaultAsync(m => m.EnrollmentID == id);
-            if (enrollment == null)
-            {
-                return NotFound();
-            }
-
-            return View(enrollment);
+                if (enrollment != null)
+                {
+                    return View(enrollment);
+                }                
+            }            
+            return NotFound();
         }
 
         // GET: Enrollment/Create
@@ -63,9 +60,16 @@ namespace cu_pum.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(enrollment);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                if (!EnrollmentExists(enrollment.CourseID, enrollment.StudentID))
+                {
+                    _context.Add(enrollment);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Enrolement is already done");
+                }                
             }
             MakeCourseList(enrollment);
             MakeStudentList(enrollment);
@@ -106,8 +110,16 @@ namespace cu_pum.Controllers
             {
                 try
                 {
-                    _context.Update(enrollment);
-                    await _context.SaveChangesAsync();
+                    if (!EnrollmentExists(enrollment.CourseID, enrollment.StudentID))
+                    {
+                        _context.Update(enrollment);
+                        await _context.SaveChangesAsync();
+                        return RedirectToAction(nameof(Index));
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("", "Enrolement is already done");
+                    }
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -119,8 +131,7 @@ namespace cu_pum.Controllers
                     {
                         throw;
                     }
-                }
-                return RedirectToAction(nameof(Index));
+                }                
             }
             MakeCourseList(enrollment);
             MakeStudentList(enrollment);
@@ -158,9 +169,14 @@ namespace cu_pum.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool EnrollmentExists(int id)
+        private bool EnrollmentExists(int EnrollmentID)
         {
-            return _context.Enrollments.Any(e => e.EnrollmentID == id);
+            return _context.Enrollments.Any(e => e.EnrollmentID == EnrollmentID);
+        }
+
+        private bool EnrollmentExists(int CourseID, int StudentID)
+        {
+            return _context.Enrollments.Any(e => (e.CourseID == CourseID) && (e.StudentID == StudentID));
         }
 
         private void MakeCourseList(Enrollment enrollment)

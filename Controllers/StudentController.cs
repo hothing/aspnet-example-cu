@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ContosoUniversity.Data;
 using ContosoUniversity.Models;
+using ContosoUniversity.Models.ViewModels;
 
 namespace ContosoUniversity
 {
@@ -28,19 +29,22 @@ namespace ContosoUniversity
         // GET: Student/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
+            if (id != null)
+            {   
+                var student = await _context.Students
+                    .Include(s => s.Enrollments)
+                    .ThenInclude(e => e.Course)
+                    .FirstOrDefaultAsync(m => m.ID == id);
+                if (student != null)
+                {
+                    var studentDetails = new StudentDetailsData() {
+                        Student = student,
+                        Enrollments = student.Enrollments // FIXME: yes, it was stupid
+                    };
+                    return View(studentDetails);    
+                }
             }
-
-            var student = await _context.Students
-                .FirstOrDefaultAsync(m => m.ID == id);
-            if (student == null)
-            {
-                return NotFound();
-            }
-
-            return View(student);
+            return NotFound();
         }
 
         // GET: Student/Create
