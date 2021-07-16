@@ -1,4 +1,4 @@
-@model ContosoUniversity.Models.Instructor
+@model ContosoUniversity.Models.ViewModels.InstructorEditForm
 
 @{
     Layout = "_Layout";
@@ -35,16 +35,33 @@
                 <input asp-for="HireDate" class="form-control" />
                 <span asp-validation-for="HireDate" class="text-danger"></span>
             </div>
-            <div>
-                <label>Office</label>
-                @if (Model.OfficeAssignment != null)
-                {
-                    @Html.ActionLink(Model.OfficeAssignment.Location, "Edit", "OfficeAssignment", new { id = Model.ID } )
-                } 
-                else
-                {
-                    @Html.ActionLink("(Set)", "Create", "OfficeAssignment" )
-                }                
+            <div class="form-group">
+                <label asp-for="Office" class="control-label">Office</label>
+                <input asp-for="Office" class="form-control" />
+                <span asp-validation-for="Office" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <select asp-for="Courses" class="form-control">
+                @{
+                    if (Model.Courses != null)
+                    {
+                        @foreach (var course in Model.Courses)
+                        {
+                            var selOption = "";
+                            @if (course.Assigned)
+                            {
+                                selOption = "selected";
+                            }
+                            @:<option value="@course.CourseID" @(Html.Raw(selOption))>@course.Title</option>
+                            <input type="checkbox"
+                                               name="selectedCourses"
+                                               value="@course.CourseID"
+                                               @(Html.Raw(course.Assigned ? "checked=\"checked\"" : "")) />
+                                               @course.Title<br/>
+                        }
+                    }
+                }
+                </select>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

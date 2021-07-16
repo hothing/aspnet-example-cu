@@ -125,20 +125,29 @@ namespace cu_pum.Controllers
             {
                 return NotFound();
             }
-
-            //var instructor = await _context.Instructor
-            //    .FindAsync(id);
+            var courses = await _context.Courses.ToListAsync();
             var instructor = await _context.Instructor
                 .Include(instr => instr.CourseAssignments)
                 .ThenInclude(ca => ca.Course)
                 .Include(instr => instr.OfficeAssignment)
                 .FirstOrDefaultAsync(m => m.ID == id);
                 
-            if (instructor == null)
+            if (instructor != null)
+            {
+                var editInstructor = new InstructorEditForm() {
+                    ID = instructor.ID,
+                    FirstMidName = instructor.FirstMidName,
+                    LastName = instructor.LastName,
+                    HireDate = instructor.HireDate,
+                    Office = instructor.OfficeAssignment.Location,
+                    Courses = getCoursesMap(instructor.ID) 
+                };
+                return View(editInstructor);   
+            }
+            else
             {
                 return NotFound();
             }
-            return View(instructor);
         }
 
         // POST: Instructor/Edit/5
@@ -146,9 +155,11 @@ namespace cu_pum.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("HireDate,ID,LastName,FirstMidName")] Instructor instructor)
+        public async Task<IActionResult> Edit(int id, 
+                                                [Bind("ID,HireDate,LastName,FirstMidName,Office,selectedCourses")] 
+                                                InstructorEditResponse response)
         {
-            if (id != instructor.ID)
+            if (id != response.ID)
             {
                 return NotFound();
             }
@@ -156,13 +167,33 @@ namespace cu_pum.Controllers
             if (ModelState.IsValid)
             {
                 try
-                {
-                    _context.Update(instructor);
-                    await _context.SaveChangesAsync();
+                {                    
+                    if (ModelState.IsValid)
+                    {
+                        var instructor =new Instructor() {
+                            ID = response.ID,
+                            FirstMidName = response.FirstMidName,
+                            LastName = response.LastName,
+                            HireDate = response.HireDate
+                        };
+                        var officeAssignment = new OfficeAssignment() {
+                            InstructorID = response.ID,
+                            Location = response.Office
+                        };
+                        _context.Update(officeAssignment);
+                        _context.Update(instructor);
+                        // TODO:Course Assigment       
+                        await _context.SaveChangesAsync();                
+                    }
+                    else
+                    {
+                        // not ok, the record exists. The actual page must be showen with warning
+                        //ModelState.AddModelError(nameof(response.selectedCourses), "Assigment exists");
+                    }                    
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!InstructorExists(instructor.ID))
+                    if (!InstructorExists(response.ID))
                     {
                         return NotFound();
                     }
@@ -173,7 +204,40 @@ namespace cu_pum.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(instructor);
+            
+            return View( new InstructorEditForm() {
+                ID = response.ID,
+                FirstMidName = response.FirstMidName,
+                LastName = response.LastName,
+                HireDate = response.HireDate,
+                Office = response.Office,
+                Courses = getCoursesMap(response.ID) 
+            });
+        }
+
+        private bool CourseAssignmentExists(int CourseID, int InstructorID)
+        {
+            return _context.CourseAssignments.Any(e => (e.CourseID == CourseID) && (e.InstructorID == InstructorID));
+        }
+
+        private List<AssignedCourseData> getCoursesMap(int InstructorID)
+        {
+            var mapCourses = new List<AssignedCourseData>();
+            var allCourses = _context.Courses.ToList();
+            var assignedCourses = _context.CourseAssignments
+                                    .Include(c => c.Course)
+                                    .Where(ca => ca.InstructorID == InstructorID)
+                                    .ToList();
+            foreach (var c in allCourses)
+            {
+                var r = assignedCourses.Where(ca => ca.CourseID == c.CourseID).Count();
+                mapCourses.Add(new AssignedCourseData() {
+                    CourseID = c.CourseID,
+                    Title = c.Title,
+                    Assigned = (r > 0)
+                });
+            }
+            return mapCourses;
         }
 
         // GET: Instructor/Delete/5

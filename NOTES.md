@@ -1,5 +1,13 @@
 # Notes
 
+## ASP.NET
+
+The 'ViewModel' is main way for data exchange between 'Controller' and 'View'. For the simple cases the 'Model' and 'ViewModel' are the same. 
+The 'ViewData' member is additional one-direction way to deliver data into 'View' and it should be used for generated HTML-chunks. 
+
+Oh. Could it be that for sending data into view and for reciving data from view the different 'ViewModel'-s should be used?
+My answer is yes. The recieveing data can be represented in two ways: as bound object and as method argumnets. The second way is prefferable.
+
 ## Department debits and course credits
 
 I do not understand how it works and what is deal.
@@ -10,22 +18,7 @@ I do not understand how it works and what is deal.
 
 What was found in the Michigan State Univercity site: 
 
-> Sample Budgets
-> Resources
->
->    MSU Cost Calculator
->    MSU Housing Services
->    Residential Meal Plans
->    Budget Worksheet &
->    Money Management Tips
->
 > The sample budgets below represent average costs for the 2020-2021 academic year, or what is often referred to as the cost of attendance. These budgets are based on 15 credits/semester for undergraduate students and 9 credits/semester for graduate students.
-
-> Room and board costs in the budget include a double room, linen service, Silver meal plan and use of study, laundry and recreational facilities. Students are allotted the same amount for living costs (room and board) whether they live on- or off-campus.
-
-> Personal and miscellaneous costs include average amounts for clothing, transportation, personal care, cell phone, recreation, etc.
-
-> Please note that there is no allowance in the undergraduate budget for car expenses.
 
 A small code piece from real university site to calculate: [univeristy-budget-credits-calc-example.js](univeristy-budget-credits-calc-example.js)
 
