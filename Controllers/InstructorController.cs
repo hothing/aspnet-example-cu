@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
 using ContosoUniversity.Data;
 using ContosoUniversity.Models;
 using ContosoUniversity.Models.ViewModels;
@@ -15,9 +17,12 @@ namespace cu_pum.Controllers
     {
         private readonly SchoolContext _context;
 
-        public InstructorController(SchoolContext context)
+        private readonly ILogger<InstructorController> _logger;
+
+        public InstructorController(SchoolContext context, ILoggerFactory loggerFactory)
         {
             _context = context;
+            _logger = loggerFactory.CreateLogger<InstructorController>();
         }
 
         // GET: Instructor
@@ -28,35 +33,9 @@ namespace cu_pum.Controllers
                         .ThenInclude(ca => ca.Course)
                         .Include(instr => instr.OfficeAssignment)
                         .ToListAsync();
-            /* foreach (var instr in InstructorsList)
-            {
-                _context.Entry(instr).Collection(b => b.CourseAssignments).Load();
-            } */
-            //return View(await _context.Instructor.ToListAsync());
             return View(InstructorsList);
         }
-
-        // GET: Instructor/Details/5
-        /* public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var instructor = await _context.Instructor
-                .Include(instr => instr.CourseAssignments)
-                .ThenInclude(ca => ca.Course)
-                .Include(instr => instr.OfficeAssignment)
-                .FirstOrDefaultAsync(m => m.ID == id);
-                
-            if (instructor == null)
-            {
-                return NotFound();
-            }
-
-            return View(instructor);
-        } */
+      
 
         // GET: Instructor/Details/5
         public async Task<IActionResult> Details(int? id, int? CourseID)
@@ -121,33 +100,38 @@ namespace cu_pum.Controllers
         // GET: Instructor/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
+            if (id != null)
             {
-                return NotFound();
+                var instructor = await _context.Instructor
+                    .Include(instr => instr.CourseAssignments)
+                    .ThenInclude(ca => ca.Course)
+                    .Include(instr => instr.OfficeAssignment)
+                    .FirstOrDefaultAsync(m => m.ID == id);
+                    
+                if (instructor != null)
+                {
+                    _logger.LogDebug($"Requets for {id}");
+                    var editInstructor = new InstructorEditForm() {
+                        ID = instructor.ID,
+                        FirstMidName = instructor.FirstMidName,
+                        LastName = instructor.LastName,
+                        HireDate = instructor.HireDate
+                    };
+                    if (instructor.OfficeAssignment != null)
+                    {
+                        editInstructor.Office = instructor.OfficeAssignment?.Location;
+                    }
+                    else
+                    {
+                        editInstructor.Office = "";
+                    }
+                     
+                    editInstructor.Courses = getCoursesMap(instructor.ID);
+                    _logger.LogDebug($"Answer is {editInstructor}");
+                    return View(editInstructor);   
+                }
             }
-            var courses = await _context.Courses.ToListAsync();
-            var instructor = await _context.Instructor
-                .Include(instr => instr.CourseAssignments)
-                .ThenInclude(ca => ca.Course)
-                .Include(instr => instr.OfficeAssignment)
-                .FirstOrDefaultAsync(m => m.ID == id);
-                
-            if (instructor != null)
-            {
-                var editInstructor = new InstructorEditForm() {
-                    ID = instructor.ID,
-                    FirstMidName = instructor.FirstMidName,
-                    LastName = instructor.LastName,
-                    HireDate = instructor.HireDate,
-                    Office = instructor.OfficeAssignment.Location,
-                    Courses = getCoursesMap(instructor.ID) 
-                };
-                return View(editInstructor);   
-            }
-            else
-            {
-                return NotFound();
-            }
+            return NotFound();
         }
 
         // POST: Instructor/Edit/5
@@ -159,60 +143,126 @@ namespace cu_pum.Controllers
                                                 [Bind("ID,HireDate,LastName,FirstMidName,Office,selectedCourses")] 
                                                 InstructorEditResponse response)
         {
-            if (id != response.ID)
+            if (id == response.ID)
             {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {                    
-                    if (ModelState.IsValid)
-                    {
-                        var instructor =new Instructor() {
+                if (ModelState.IsValid)
+                {
+                    try
+                    {                    
+                        var instructor = new Instructor() {
                             ID = response.ID,
                             FirstMidName = response.FirstMidName,
                             LastName = response.LastName,
                             HireDate = response.HireDate
                         };
+                        _context.Update(instructor);
+                        
                         var officeAssignment = new OfficeAssignment() {
                             InstructorID = response.ID,
                             Location = response.Office
-                        };
-                        _context.Update(officeAssignment);
-                        _context.Update(instructor);
-                        // TODO:Course Assigment       
-                        await _context.SaveChangesAsync();                
+                        };                        
+                        if (!AnyOfficeAssignmentExists(officeAssignment))
+                        {
+                            _logger.LogDebug($"New office assigment for {officeAssignment.Location}");
+                            _context.Add(officeAssignment); 
+                        }
+                        else
+                        {
+                            _logger.LogDebug($"Updating of office assigment for {officeAssignment.Location}");
+                            _context.Update(officeAssignment);
+                        }
+                        // TODO:Course Assigment
+                        if (response.selectedCourses != null)
+                        {
+                            var _instructor = await _context.Instructor
+                                                .Include(instr => instr.CourseAssignments)
+                                                .ThenInclude(ca => ca.Course)
+                                                .FirstOrDefaultAsync(m => m.ID == id);
+                            if (_instructor != null)
+                            {
+                                var allCourses = await _context.Courses.ToListAsync();
+                                var assignedCourses = _instructor.CourseAssignments.ToList();
+                                var updatedCourses = new List<int>(response.selectedCourses);
+                                // stage 1: remove assigment
+                                foreach (var course in assignedCourses)
+                                {
+                                    if (!updatedCourses.Contains(course.CourseID))
+                                    {
+                                        var x = allCourses.Find(c => c.CourseID == course.CourseID);
+                                        if (x != null)
+                                        {
+                                            _context.CourseAssignments.Remove(course);                                            
+                                        }
+                                        updatedCourses.Remove(course.CourseID);                                   
+                                    } 
+                                }
+                                // stage 2: add assigment
+                                foreach (var newCourse in updatedCourses)
+                                {
+                                    if (!CourseAssignmentExists(newCourse, response.ID))
+                                    {   
+                                        _context.Add(new CourseAssignment() 
+                                                    { 
+                                                        CourseID = newCourse, 
+                                                        InstructorID = response.ID
+                                                    });
+                                    }
+                                }
+                                await _context.SaveChangesAsync();                               
+                            }                            
+                        }
+                        await _context.SaveChangesAsync();                                                 
                     }
-                    else
+                    catch (DbUpdateConcurrencyException)
                     {
-                        // not ok, the record exists. The actual page must be showen with warning
-                        //ModelState.AddModelError(nameof(response.selectedCourses), "Assigment exists");
-                    }                    
+                        if (!InstructorExists(response.ID))
+                        {
+                            return NotFound();
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                    return RedirectToAction(nameof(Index));
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!InstructorExists(response.ID))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                
+                return View( new InstructorEditForm() {
+                    ID = response.ID,
+                    FirstMidName = response.FirstMidName,
+                    LastName = response.LastName,
+                    HireDate = response.HireDate,
+                    Office = response.Office,
+                    Courses = getCoursesMap(response.ID) 
+                });
+            }            
+            return NotFound();
+        }
+
+        private bool OfficeAssignmentExists(OfficeAssignment officeAssignment)
+        {
+            if (officeAssignment != null)
+            {
+                return _context.OfficeAssignments.Any(e => (e.InstructorID == officeAssignment.InstructorID) && (String.Compare(e.Location, officeAssignment.Location) == 0));
             }
-            
-            return View( new InstructorEditForm() {
-                ID = response.ID,
-                FirstMidName = response.FirstMidName,
-                LastName = response.LastName,
-                HireDate = response.HireDate,
-                Office = response.Office,
-                Courses = getCoursesMap(response.ID) 
-            });
+            else
+            {
+                // because there is no information the worst case action is using
+                return true;
+            }
+        }
+
+        private bool AnyOfficeAssignmentExists(OfficeAssignment officeAssignment)
+        {
+            if (officeAssignment != null)
+            {
+                return _context.OfficeAssignments.Any(e => (e.InstructorID == officeAssignment.InstructorID));
+            }
+            else
+            {
+                // because there is no information the worst case action is using
+                return true;
+            }
         }
 
         private bool CourseAssignmentExists(int CourseID, int InstructorID)

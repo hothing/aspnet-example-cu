@@ -41,27 +41,34 @@
                 <span asp-validation-for="Office" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <select asp-for="Courses" class="form-control">
-                @{
-                    if (Model.Courses != null)
+                <label asp-for="Courses" class="control-label">Course(s)</label>
+                <table>                   
+                    @if (Model.Courses != null)
                     {
+                        <thead>
+                            <tr>
+                                <th>Assign</th>
+                                <th>Title</th>
+                            </tr>
+                        </thead>                        
                         @foreach (var course in Model.Courses)
                         {
                             var selOption = "";
                             @if (course.Assigned)
                             {
-                                selOption = "selected";
+                                selOption = "checked";
                             }
-                            @:<option value="@course.CourseID" @(Html.Raw(selOption))>@course.Title</option>
-                            <input type="checkbox"
+                            <tr>
+                                <td><input type="checkbox"
                                                name="selectedCourses"
                                                value="@course.CourseID"
-                                               @(Html.Raw(course.Assigned ? "checked=\"checked\"" : "")) />
-                                               @course.Title<br/>
+                                               @selOption/>
+                                </td>
+                                <td>@course.Title</td>
+                            </tr>                            
                         }
                     }
-                }
-                </select>
+                </table>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

@@ -42,7 +42,7 @@
                 
                     @if (item.CourseAssignments != null)
                     {
-                        @if (item.CourseAssignments.Count > 1)
+                        @if (item.CourseAssignments.Count >= 1)
                         {                            
                             @foreach (var c in item.CourseAssignments)
                             {
@@ -51,7 +51,7 @@
                         }
                         else 
                         {
-                            @item.CourseAssignments.First().Course.Title;
+                            @:<p>no assigned course</p>
                         }                       
                     }               
                                 
