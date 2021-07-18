@@ -61,9 +61,20 @@ namespace cu_pum.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(course);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                // check if CourseID exists
+                var x = await _context.Courses.FindAsync(course.CourseID);
+                if (x == null)
+                {
+                    // ther is not any course with same ID
+                    // we can add a new course
+                    _context.Add(course);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    ModelState.AddModelError("CourseID", "Course number is in use");
+                }
             }
             MakeDeparmentList(course);
             return View(course);
