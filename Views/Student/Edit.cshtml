@@ -66,12 +66,16 @@
                                 </td>
                                 <td>@course.Title</td>
                                 <td>
-                                    <select name="CourseGrade" class="form-control">
+                                    <select name="selectedGrades" class="form-control">
                                         <option value="">None</option>
-                                        <option value="0">A</option>
-                                        <option value="1">B</option>
-                                        <option value="2">C</option>
-                                        <option value="3">D</option>    
+                                        @{
+                                            var gradeNames = Enum.GetNames(typeof(Grade));
+                                            var gradeValues = Enum.GetValues(typeof(Grade));
+                                        }
+                                        @for (int i = 0; i < gradeValues.Length; i ++)
+                                        {
+                                            <option value="@gradeValues.GetValue(i)">@gradeNames.GetValue(i)</option>
+                                        }
                                     </select>
                                     <!--<span asp-validation-for="Grade" class="text-danger"></span>-->
                                 </td>

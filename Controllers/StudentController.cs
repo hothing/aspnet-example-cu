@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
 using ContosoUniversity.Data;
 using ContosoUniversity.Models;
 using ContosoUniversity.Models.ViewModels;
@@ -15,9 +17,12 @@ namespace ContosoUniversity
     {
         private readonly SchoolContext _context;
 
-        public StudentController(SchoolContext context)
+        private readonly ILogger<StudentController> _logger;
+
+        public StudentController(SchoolContext context, ILoggerFactory loggerFactory)
         {
             _context = context;
+            _logger = loggerFactory.CreateLogger<StudentController>();
         }
 
         // GET: Student

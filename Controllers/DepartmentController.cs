@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
 using ContosoUniversity.Data;
 using ContosoUniversity.Models;
 
@@ -13,10 +15,12 @@ namespace cu_pum.Controllers
     public class DepartmentController : Controller
     {
         private readonly SchoolContext _context;
+        private readonly ILogger<DepartmentController> _logger;
 
-        public DepartmentController(SchoolContext context)
+        public DepartmentController(SchoolContext context, ILoggerFactory loggerFactory)
         {
             _context = context;
+            _logger = loggerFactory.CreateLogger<DepartmentController>();
         }
 
         // GET: Department

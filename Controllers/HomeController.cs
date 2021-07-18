@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+
 using ContosoUniversity.Models;
 
 namespace ContosoUniversity.Controllers
@@ -13,9 +14,9 @@ namespace ContosoUniversity.Controllers
     {
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILoggerFactory loggerFactory)
         {
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<HomeController>();
         }
 
         public IActionResult Index()

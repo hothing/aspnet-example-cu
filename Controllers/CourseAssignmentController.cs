@@ -17,10 +17,10 @@ namespace cu_pum.Controllers
         private readonly SchoolContext _context;
         private readonly ILogger<CourseAssignmentController> _logger;
 
-        public CourseAssignmentController(SchoolContext context, ILogger<CourseAssignmentController> logger)
+        public CourseAssignmentController(SchoolContext context, ILoggerFactory loggerFactory)
         {
             _context = context;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<CourseAssignmentController>();
         }
 
         // GET: CourseAssignment
