@@ -102,7 +102,7 @@ namespace cu_pum.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!PersonExists(person.ID))
+                    if (!_context.PersonExists(person.ID))
                     {
                         return NotFound();
                     }
@@ -143,11 +143,6 @@ namespace cu_pum.Controllers
             _context.People.Remove(person);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool PersonExists(int id)
-        {
-            return _context.People.Any(e => e.ID == id);
-        }
+        }        
     }
 }

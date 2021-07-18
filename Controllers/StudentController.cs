@@ -106,7 +106,7 @@ namespace ContosoUniversity
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!StudentExists(student.ID))
+                    if (_context.StudentExists(student.ID))
                     {
                         return NotFound();
                     }
@@ -149,9 +149,6 @@ namespace ContosoUniversity
             return RedirectToAction(nameof(Index));
         }
 
-        private bool StudentExists(int id)
-        {
-            return _context.Students.Any(e => e.ID == id);
-        }
+        
     }
 }

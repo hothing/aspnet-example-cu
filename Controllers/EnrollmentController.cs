@@ -60,7 +60,7 @@ namespace cu_pum.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (!EnrollmentExists(enrollment.CourseID, enrollment.StudentID))
+                if (!_context.EnrollmentExists(enrollment.CourseID, enrollment.StudentID))
                 {
                     _context.Add(enrollment);
                     await _context.SaveChangesAsync();
@@ -110,7 +110,7 @@ namespace cu_pum.Controllers
             {
                 try
                 {
-                    if (!EnrollmentExists(enrollment.CourseID, enrollment.StudentID))
+                    if (!_context.EnrollmentExists(enrollment.CourseID, enrollment.StudentID))
                     {
                         _context.Update(enrollment);
                         await _context.SaveChangesAsync();
@@ -123,7 +123,7 @@ namespace cu_pum.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!EnrollmentExists(enrollment.EnrollmentID))
+                    if (!_context.EnrollmentExists(enrollment.EnrollmentID))
                     {
                         return NotFound();
                     }
@@ -169,16 +169,7 @@ namespace cu_pum.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool EnrollmentExists(int EnrollmentID)
-        {
-            return _context.Enrollments.Any(e => e.EnrollmentID == EnrollmentID);
-        }
-
-        private bool EnrollmentExists(int CourseID, int StudentID)
-        {
-            return _context.Enrollments.Any(e => (e.CourseID == CourseID) && (e.StudentID == StudentID));
-        }
-
+        
         private void MakeCourseList(Enrollment enrollment)
         {
             ViewData["CourseID"] = new SelectList(_context.Courses, "CourseID", "Title", enrollment?.CourseID);

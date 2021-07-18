@@ -61,7 +61,7 @@ namespace cu_pum.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (!OfficeAssignmentExists(officeAssignment))
+                if (!_context.OfficeAssignmentExists(officeAssignment))
                     {
                         _context.Add(officeAssignment);
                         await _context.SaveChangesAsync();
@@ -109,7 +109,7 @@ namespace cu_pum.Controllers
             {
                 try
                 {
-                    if (!OfficeAssignmentExists(officeAssignment))
+                    if (!_context.OfficeAssignmentExists(officeAssignment))
                     {
                         _context.Update(officeAssignment);
                         await _context.SaveChangesAsync();
@@ -121,7 +121,7 @@ namespace cu_pum.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!OfficeAssignmentExists(officeAssignment.InstructorID))
+                    if (!_context.OfficeAssignmentExists(officeAssignment.InstructorID))
                     {
                         return NotFound();
                     }
@@ -165,24 +165,7 @@ namespace cu_pum.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
-
-        private bool OfficeAssignmentExists(int id)
-        {
-            return _context.OfficeAssignments.Any(e => e.InstructorID == id);
-        }
-
-        private bool OfficeAssignmentExists(OfficeAssignment officeAssignment)
-        {
-            if (officeAssignment !=null)
-            {
-                return _context.OfficeAssignments.Any(e => (e.InstructorID == officeAssignment.InstructorID) && (String.Compare(e.Location, officeAssignment.Location) == 0));
-            }
-            else
-            {
-                // because there is no information the worst case action is using
-                return true;
-            }
-        }
+     
 
         private void MakeInstructorList(OfficeAssignment officeAssignment)
         {

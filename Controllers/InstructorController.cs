@@ -53,6 +53,7 @@ namespace cu_pum.Controllers
 
             if (instructor != null)
             {
+                // TODO: extract
                 IEnumerable<Enrollment> ex = null;
                 if (CourseID != null)
                 {
@@ -126,7 +127,7 @@ namespace cu_pum.Controllers
                         editInstructor.Office = "";
                     }
                      
-                    editInstructor.Courses = getCoursesMap(instructor.ID);
+                    editInstructor.Courses = _context.getCoursesMap(instructor.ID);
                     _logger.LogDebug($"Answer is {editInstructor}");
                     return View(editInstructor);   
                 }
@@ -161,7 +162,7 @@ namespace cu_pum.Controllers
                             InstructorID = response.ID,
                             Location = response.Office
                         };                        
-                        if (!AnyOfficeAssignmentExists(officeAssignment))
+                        if (!_context.AnyOfficeAssignmentExists(officeAssignment))
                         {
                             _logger.LogDebug($"New office assigment for {officeAssignment.Location}");
                             _context.Add(officeAssignment); 
@@ -171,7 +172,7 @@ namespace cu_pum.Controllers
                             _logger.LogDebug($"Updating of office assigment for {officeAssignment.Location}");
                             _context.Update(officeAssignment);
                         }
-                        // TODO:Course Assigment
+                        // TODO: extract Course Assigment
                         if (response.selectedCourses != null)
                         {
                             var _instructor = await _context.Instructor
@@ -199,7 +200,7 @@ namespace cu_pum.Controllers
                                 // stage 2: add assigment
                                 foreach (var newCourse in updatedCourses)
                                 {
-                                    if (!CourseAssignmentExists(newCourse, response.ID))
+                                    if (!_context.CourseAssignmentExists(newCourse, response.ID))
                                     {   
                                         _context.Add(new CourseAssignment() 
                                                     { 
@@ -215,7 +216,7 @@ namespace cu_pum.Controllers
                     }
                     catch (DbUpdateConcurrencyException)
                     {
-                        if (!InstructorExists(response.ID))
+                        if (!_context.InstructorExists(response.ID))
                         {
                             return NotFound();
                         }
@@ -233,62 +234,11 @@ namespace cu_pum.Controllers
                     LastName = response.LastName,
                     HireDate = response.HireDate,
                     Office = response.Office,
-                    Courses = getCoursesMap(response.ID) 
+                    Courses = _context.getCoursesMap(response.ID) 
                 });
             }            
             return NotFound();
-        }
-
-        private bool OfficeAssignmentExists(OfficeAssignment officeAssignment)
-        {
-            if (officeAssignment != null)
-            {
-                return _context.OfficeAssignments.Any(e => (e.InstructorID == officeAssignment.InstructorID) && (String.Compare(e.Location, officeAssignment.Location) == 0));
-            }
-            else
-            {
-                // because there is no information the worst case action is using
-                return true;
-            }
-        }
-
-        private bool AnyOfficeAssignmentExists(OfficeAssignment officeAssignment)
-        {
-            if (officeAssignment != null)
-            {
-                return _context.OfficeAssignments.Any(e => (e.InstructorID == officeAssignment.InstructorID));
-            }
-            else
-            {
-                // because there is no information the worst case action is using
-                return true;
-            }
-        }
-
-        private bool CourseAssignmentExists(int CourseID, int InstructorID)
-        {
-            return _context.CourseAssignments.Any(e => (e.CourseID == CourseID) && (e.InstructorID == InstructorID));
-        }
-
-        private List<AssignedCourseData> getCoursesMap(int InstructorID)
-        {
-            var mapCourses = new List<AssignedCourseData>();
-            var allCourses = _context.Courses.ToList();
-            var assignedCourses = _context.CourseAssignments
-                                    .Include(c => c.Course)
-                                    .Where(ca => ca.InstructorID == InstructorID)
-                                    .ToList();
-            foreach (var c in allCourses)
-            {
-                var r = assignedCourses.Where(ca => ca.CourseID == c.CourseID).Count();
-                mapCourses.Add(new AssignedCourseData() {
-                    CourseID = c.CourseID,
-                    Title = c.Title,
-                    Assigned = (r > 0)
-                });
-            }
-            return mapCourses;
-        }
+        }       
 
         // GET: Instructor/Delete/5
         public async Task<IActionResult> Delete(int? id)
@@ -319,9 +269,6 @@ namespace cu_pum.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool InstructorExists(int id)
-        {
-            return _context.Instructor.Any(e => e.ID == id);
-        }
+       
     }
 }

@@ -107,7 +107,7 @@ namespace cu_pum.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!DepartmentExists(department.DepartmentID))
+                    if (!_context.DepartmentExists(department.DepartmentID))
                     {
                         return NotFound();
                     }
@@ -151,12 +151,6 @@ namespace cu_pum.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
-
-        private bool DepartmentExists(int id)
-        {
-            return _context.Department.Any(e => e.DepartmentID == id);
-        }
-        
 
         private void MakeInstructorList(Department department)
         {

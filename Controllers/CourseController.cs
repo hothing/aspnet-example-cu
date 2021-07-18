@@ -107,7 +107,7 @@ namespace cu_pum.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CourseExists(course.CourseID))
+                    if (!_context.CourseExists(course.CourseID))
                     {
                         return NotFound();
                     }
@@ -152,10 +152,6 @@ namespace cu_pum.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool CourseExists(int id)
-        {
-            return _context.Courses.Any(e => e.CourseID == id);
-        }
         private void MakeDeparmentList(Course course)
         {
             if (course != null)
